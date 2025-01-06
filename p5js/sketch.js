@@ -9,7 +9,7 @@ let frameLength = 2048;
 const SERVER_URL = "http://127.0.0.1:5050";
 
 function setup() {
-    canvas = createCanvas(400, 400); // Canvas size
+    canvas = createCanvas(1600, 1000); // Canvas size
     centerCanvas();
     bgColor = color(255); // Default background color (white)
     fontColor = color(0); // Default font color (black)
