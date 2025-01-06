@@ -2,6 +2,8 @@ let zcrIndex = 0; // Start fetching ZCR from index 0
 let bgColor;
 let fontColor;
 let canvas;
+let sampleRate = 44100;
+let frameLength = 2048;
 
 //const SERVER_URL = "http://192.168.1.182:5050"; // Update to match your Python server address
 const SERVER_URL = "http://127.0.0.1:5050";
@@ -11,7 +13,7 @@ function setup() {
     centerCanvas();
     bgColor = color(255); // Default background color (white)
     fontColor = color(0); // Default font color (black)
-    setInterval(fetchZCR, 100); // Fetch ZCR every 100ms
+    setInterval(fetchZCR, sampleRate / frameLength); // Fetch ZCR every 100ms
 }
 
 function centerCanvas() {
@@ -45,7 +47,7 @@ function fetchZCR() {
         .then((data) => {
             if (data.zcr !== undefined) {
                 // console.log("ZCR:", data.zcr); // Log the ZCR value
-                if ( 0.06 < data.zcr < 0.08) {
+                if (data.zcr >= 0.02 && data.zcr <= 0.08) {
                     bgColor = color(0); // Change background to black
                     fontColor = color(255); // Change font color to white
                 } else {

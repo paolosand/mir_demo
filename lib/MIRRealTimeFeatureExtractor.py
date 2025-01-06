@@ -10,7 +10,7 @@ class RealTimeFileFeatureExtractor:
     Real-time feature extractor for Zero Crossing Rate (ZCR) from a WAV file.
     """
 
-    def __init__(self, filename, sr=44100, block_size=1024, scale=0.8):
+    def __init__(self, filename, sr=44100, block_size=2048, scale=1.0):
         self.filename = filename
         self.sr = sr
         self.block_size = block_size
@@ -52,7 +52,7 @@ class RealTimeFileFeatureExtractor:
         self.audio_index = end
 
         # Compute ZCR for the current frame
-        zcr = librosa.feature.zero_crossing_rate(frame, frame_length=len(frame)).mean()
+        zcr = librosa.feature.zero_crossing_rate(frame, frame_length=len(frame), hop_length=len(frame)).mean()
         self.zcr_values.append(zcr)
 
         return frame.astype(np.float32).tobytes(), pyaudio.paContinue
