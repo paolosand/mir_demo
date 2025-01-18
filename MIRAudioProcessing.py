@@ -4,12 +4,10 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from lib.MIRRealTimeFeatureExtractor import RealTimeFileFeatureExtractor
 import signal
-
-zcr_values = []
-
-# Suppress log
 import logging
 logging.getLogger('werkzeug').setLevel(logging.ERROR)  # Suppress logs
+
+zcr_values = []
 
 # Flask app
 app = Flask(__name__)
