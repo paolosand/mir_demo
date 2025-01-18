@@ -23,7 +23,7 @@ def start_audio_stream():
 
 @app.route("/get_zcr/<int:index>", methods=["GET"])
 def get_zcr(index):
-    zcr = feature_extractor.get_zcr_at_index(index)
+    zcr = feature_extractor.get_features_at_index(index)
     if zcr is not None:
         zcr_values.append({"index": index, "zcr": zcr})  # Append ZCR value
         # Save all ZCR values to JSON immediately

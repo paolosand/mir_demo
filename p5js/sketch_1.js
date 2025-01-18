@@ -7,6 +7,7 @@ let zcrIndex = 0; // Start fetching from the first index
 let particles = []; // Array to store particle objects
 let noiseScale = 0.01; // Scale for Perlin noise
 let maxParticles = 200; // Number of particles
+let shootingStarMode = false; // Flag for shooting star effect
 
 // Server URL
 const SERVER_URL = "http://127.0.0.1:5050";
@@ -34,6 +35,8 @@ function createParticle() {
         speed: random(1, 3),
         dirX: random([-1, 1]),
         dirY: random([-1, 1]),
+        trail: [], // Array to store trail positions
+        maxTrailLength: 10, // Length of the trail
     };
 }
 
@@ -50,19 +53,37 @@ function windowResized() {
 function draw() {
     background(bgColor);
 
-    // Draw particles
     for (let p of particles) {
-        let n = noise(p.x * noiseScale, p.y * noiseScale);
-        let angle = TAU * n;
+        // Update particle position
+        if (shootingStarMode) {
+            // Particles move in a line during shooting star mode
+            p.x += p.dirX * p.speed * 2; // Faster movement
+            p.y += p.dirY * p.speed * 0.5; // Smaller vertical movement
+        } else {
+            // Particles move organically using Perlin noise
+            let n = noise(p.x * noiseScale, p.y * noiseScale);
+            let angle = TAU * n;
+            p.x += cos(angle) * p.dirX * p.speed;
+            p.y += sin(angle) * p.dirY * p.speed;
+        }
 
-        // Update particle position based on Perlin noise
-        p.x += cos(angle) * p.dirX * p.speed;
-        p.y += sin(angle) * p.dirY * p.speed;
+        // Add current position to trail
+        p.trail.push({ x: p.x, y: p.y });
+        if (p.trail.length > p.maxTrailLength) {
+            p.trail.shift(); // Remove oldest trail point
+        }
 
-        // Calculate color based on position
-        let d = dist(width / 2, height / 2, p.x, p.y) / (width / 2);
-        let colorValue = lerpColor(color(0, 100, 255), color(255, 0, 150), d);
-        fill(colorValue);
+        // Draw trail
+        noFill();
+        stroke(shootingStarMode ? color(0, 255, 0, 150) : color(255, 100)); // Neon green for shooting star mode
+        beginShape();
+        for (let t of p.trail) {
+            vertex(t.x, t.y);
+        }
+        endShape();
+
+        // Draw particle
+        fill(shootingStarMode ? color(0, 255, 0) : fontColor); // Neon green for shooting star mode
         noStroke();
         ellipse(p.x, p.y, p.size);
 
@@ -72,9 +93,11 @@ function draw() {
             p.y = random(height);
             p.dirX *= -1;
             p.dirY *= -1;
+            p.trail = []; // Clear the trail
         }
     }
 
+    // Display title text
     fill(fontColor);
     textAlign(CENTER, CENTER);
     textSize(48);
@@ -93,8 +116,15 @@ function fetchZCR() {
             if (data.zcr !== undefined) {
                 console.log(`ZCR: ${data.zcr}`); // Log the ZCR value
                 if (data.zcr >= 0.02 && data.zcr <= 0.08) {
-                    // Trigger particle noise effect
-                    noiseScale = random(0.005, 0.02); // Adjust noise scale dynamically
+                    // Activate shooting star mode
+                    bgColor = color(0); // Black background
+                    fontColor = color(255); // White font
+                    shootingStarMode = true; // Activate line movement and neon green color
+                } else {
+                    // Default mode
+                    bgColor = color(255); // White background
+                    fontColor = color(0); // Black font
+                    shootingStarMode = false;
                 }
                 zcrIndex++; // Increment index to fetch next value
             } else if (data.error) {
