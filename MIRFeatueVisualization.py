@@ -5,11 +5,15 @@ import matplotlib.pyplot as plt
 with open("zcr_values.json", "r") as json_file:
     zcr_data = json.load(json_file)
 
+with open("rms_values.json", "r") as json_file:
+    rms_data = json.load(json_file)
+
 # Step 2: Extract indices and ZCR values
 indices = [item["index"] for item in zcr_data]
 zcr_values = [item["zcr"] for item in zcr_data]
+rms_values = [item["rms"] for item in zcr_data]
 
-# Step 3: Plot the ZCR values
+# Step 3: Plot the ZCR and RMS values
 plt.figure(figsize=(10, 6))  # Set the figure size
 plt.plot(indices, zcr_values, label="ZCR", linewidth=2)
 
@@ -17,6 +21,16 @@ plt.plot(indices, zcr_values, label="ZCR", linewidth=2)
 plt.title("Zero Crossing Rate (ZCR) Over Time", fontsize=16)
 plt.xlabel("Frame Index", fontsize=14)
 plt.ylabel("ZCR", fontsize=14)
+plt.grid(True, linestyle="--", alpha=0.6)
+plt.legend(fontsize=12)
+
+plt.show()
+
+plt.figure(figsize=(10, 6))  # Set the figure size
+plt.plot(indices, rms_values, label="RMS", linewidth=2)
+plt.title("Root Mean Squared Energy (RMS) Over Time", fontsize=16)
+plt.xlabel("Frame Index", fontsize=14)
+plt.ylabel("RMS", fontsize=14)
 plt.grid(True, linestyle="--", alpha=0.6)
 plt.legend(fontsize=12)
 

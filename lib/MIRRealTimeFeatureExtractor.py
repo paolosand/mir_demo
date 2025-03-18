@@ -16,6 +16,7 @@ class RealTimeFileFeatureExtractor:
         self.block_size = block_size
         self.scale = scale
         self.zcr_values = []
+        self.rms_values = []
         self.spectral_cent = []
         self.stop_event = threading.Event()  # Event to signal thread termination
 
@@ -56,18 +57,31 @@ class RealTimeFileFeatureExtractor:
         zcr = librosa.feature.zero_crossing_rate(frame, frame_length=len(frame), hop_length=len(frame)).mean()
         self.zcr_values.append(zcr)
 
+        # Compute RMS for the current frame
+        rms = librosa.feature.rms(y=frame, frame_length=len(frame), hop_length=len(frame)).mean()
+        self.rms_values.append(rms)
+
         spectral_centroid = librosa.feature.spectral_centroid(y=frame, n_fft=2048, sr=self.sr,
                                                               hop_length=len(frame)).mean()
         self.spectral_cent.append(spectral_centroid)
 
         return frame.astype(np.float32).tobytes(), pyaudio.paContinue
 
-    def get_features_at_index(self, index):
+    def get_zcr_features_at_index(self, index):
         """
         Returns the ZCR value at a specific index.
         """
         if 0 <= index < len(self.zcr_values):
             return self.zcr_values[index]
+        return None
+    
+    def get_rms_features_at_index(self, index):
+        """
+        Returns the RMS value at a specific index.
+        """
+        if 0 <= index < len(self.rms_values):
+            print(f"get_rms_features_at_index - {index}: {self.rms_values[index]}")
+            return self.rms_values[index]
         return None
 
     def start_stream(self):

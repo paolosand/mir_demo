@@ -5,9 +5,11 @@ from flask_cors import CORS
 from lib.MIRRealTimeFeatureExtractor import RealTimeFileFeatureExtractor
 import signal
 import logging
+import numpy as np
 logging.getLogger('werkzeug').setLevel(logging.ERROR)  # Suppress logs
 
 zcr_values = []
+rms_values = []
 
 # Flask app
 app = Flask(__name__)
@@ -23,7 +25,7 @@ def start_audio_stream():
 
 @app.route("/get_zcr/<int:index>", methods=["GET"])
 def get_zcr(index):
-    zcr = feature_extractor.get_features_at_index(index)
+    zcr = feature_extractor.get_zcr_features_at_index(index)
     if zcr is not None:
         zcr_values.append({"index": index, "zcr": zcr})  # Append ZCR value
         # Save all ZCR values to JSON immediately
@@ -33,6 +35,24 @@ def get_zcr(index):
 
         print(f"ZCR at index {index}: {zcr}")  # Print the ZCR value live
         return jsonify({"zcr": zcr})
+    else:
+        return jsonify({"error": "Index out of range"}), 404
+
+
+@app.route("/get_rms/<int:index>", methods=["GET"])
+def get_rms(index):
+    rms = feature_extractor.get_rms_features_at_index(index)
+    if rms is not None:
+        # print(f"reading at {index}: rms: {rms}")
+        rms_values.append({"index": index, "rms": np.float64(rms)})  # Append RMS value
+        # print(f"writing to {index}: {rms_values[-1]}")
+        # Save all RMS values to JSON immediately
+        with open("rms_values.json", "w") as json_file:
+            json.dump(rms_values, json_file)
+            print(f"Saved RMS at index {index} to rms_values.json")
+
+        print(f"RMS at index {index}: {rms}")  # Print the RMS value live
+        return jsonify({"rms": np.float64(rms)})
     else:
         return jsonify({"error": "Index out of range"}), 404
 
@@ -69,8 +89,11 @@ signal.signal(signal.SIGTERM, handle_exit)
 
 if __name__ == "__main__":
     # Initialize an empty JSON file to overwrite old data
-    with open("zcr_values.json", "w") as json_file:
-        json.dump([], json_file)  # Start with an empty JSON list
+    with open("zcr_values.json", "w") as zcr_json_file:
+        json.dump([], zcr_json_file)  # Start with an empty JSON list
+
+    with open("rms_values.json", "w") as rms_json_file:
+        json.dump([], rms_json_file)  # Start with an empty JSON list
 
     # Start audio stream in a background thread
     audio_thread = threading.Thread(target=start_audio_stream, daemon=True)
